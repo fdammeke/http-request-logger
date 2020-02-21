@@ -9,7 +9,8 @@ class DumpHTTPRequestToFile {
 			"%s %s %s\n\nHTTP headers:\n",
 			$_SERVER['REQUEST_METHOD'],
 			$_SERVER['REQUEST_URI'],
-			$_SERVER['SERVER_PROTOCOL']
+			$_SERVER['SERVER_PROTOCOL'],
+      $_REQUEST
 		);
 
 		foreach ($this->getHeaderList() as $name => $value) {
@@ -20,7 +21,8 @@ class DumpHTTPRequestToFile {
 
 		file_put_contents(
 			$targetFile,
-			$data . file_get_contents('php://input') . "\n"
+			$data . file_get_contents('php://input') . "\n",
+      FILE_APPEND
 		);
 
 		echo("Done!\n\n");
