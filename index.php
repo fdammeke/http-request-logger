@@ -1,18 +1,49 @@
 <?php
+// https://gist.github.com/magnetikonline/650e30e485c0f91f2f40
 
-echo "== SERVER";
-print_r($_SERVER);
-file_put_contents(api.log, $_SERVER, FILE_APPEND);
-echo "== GET";
-print_r($_GET);
-file_put_contents(api.log, $_GET, FILE_APPEND);
-echo "== POST";
-print_r($_POST);
-file_put_contents(api.log, $_POST, FILE_APPEND);
-echo "== INPUT";
-echo file_get_contents('php://input');
-file_put_contents(api.log, file_put_contents(api.log, $_SERVER, FILE_APPEND), FILE_APPEND);
+class DumpHTTPRequestToFile {
+
+	public function execute($targetFile) {
+
+		$data = sprintf(
+			"%s %s %s\n\nHTTP headers:\n",
+			$_SERVER['REQUEST_METHOD'],
+			$_SERVER['REQUEST_URI'],
+			$_SERVER['SERVER_PROTOCOL']
+		);
+
+		foreach ($this->getHeaderList() as $name => $value) {
+			$data .= $name . ': ' . $value . "\n";
+		}
+
+		$data .= "\nRequest body:\n";
+
+		file_put_contents(
+			$targetFile,
+			$data . file_get_contents('php://input') . "\n"
+		);
+
+		echo("Done!\n\n");
+	}
+
+	private function getHeaderList() {
+
+		$headerList = [];
+		foreach ($_SERVER as $name => $value) {
+			if (preg_match('/^HTTP_/',$name)) {
+				// convert HTTP_HEADER_NAME to Header-Name
+				$name = strtr(substr($name,5),'_',' ');
+				$name = ucwords(strtolower($name));
+				$name = strtr($name,' ','-');
+
+				// add to list
+				$headerList[$name] = $value;
+			}
+		}
+
+		return $headerList;
+	}
+}
 
 
-
-?>
+(new DumpHTTPRequestToFile)->execute('api.log');
